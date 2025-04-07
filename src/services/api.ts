@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ApiRequest, ApiResponse } from '../types';
 
-const API_URL = 'https://rag-check.onrender.com/query';
+const API_URL = 'https://accessable.onrender.com/query';
 
 export const fetchChatResponse = async (query: string): Promise<string> => {
   try {

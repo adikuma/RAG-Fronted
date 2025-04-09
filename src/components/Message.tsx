@@ -7,16 +7,6 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
-  // For empathy messages, render a notification card style
-  if (message.sender === 'empathy') {
-    return (
-      <div className="max-w-3xl mx-auto my-4 p-4 rounded-lg border border-green-400 bg-green-50 text-green-800">
-        <strong>User Sentiments:</strong> {message.text}
-      </div>
-    );
-  }
-
-  const isUser = message.sender === 'user';
   const [showTooltip, setShowTooltip] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -46,19 +36,45 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       });
   };
 
+  const isUser = message.sender === 'user';
+  const isAssistant = message.sender === 'assistant';
+  const isEmpathy = message.sender === 'empathy';
+
   return (
-    <div className={`group flex items-start gap-4 py-4 animate-fade-in ${isUser ? '' : 'relative'}`}>
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${isUser ? 'bg-gray-700' : 'bg-claude-orange'}`}>
-        {isUser ? 'You' : 'AI'}
+    <div
+      className={`group flex items-start gap-4 py-4 animate-fade-in ${
+        isAssistant ? 'relative' : '' 
+      }`}
+    >
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${
+          isUser ? 'bg-gray-700' :
+          isAssistant ? 'bg-claude-orange' :
+          'bg-blue-500' 
+        }`}
+      >
+        {isUser ? 'You' : isAssistant ? 'AI' : '💡'}
       </div>
+
       <div className="flex-1">
-        <div className="mb-1 text-sm font-medium text-gray-500">
-          {isUser ? 'You' : 'Assistant'}
-        </div>
-        <div className={`flex-1 leading-relaxed whitespace-pre-line text-gray-800 p-4 rounded-lg ${isUser ? 'bg-white shadow-md border border-blue-600' : 'bg-claude-bg/10'}`}>
+        {!isEmpathy && (
+          <div className="mb-1 text-sm font-medium text-gray-500">
+            {isUser ? 'You' : 'Assistant'}
+          </div>
+        )}
+
+        <div
+          className={`flex-1 leading-relaxed whitespace-pre-line p-4 rounded-lg ${
+            isUser ? 'bg-white shadow-md border border-blue-600' :
+            isAssistant ? 'bg-claude-bg/10' :
+            'border border-blue-400 bg-blue-50 text-blue-800' 
+          }`}
+        >
+          {isEmpathy && <strong>User Sentiments: </strong>}
           {message.text}
         </div>
-        {!isUser && (
+
+        {isAssistant && (
           <div className="relative flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               className="flex gap-2 p-1.5 rounded-md text-gray-500 border hover:border-gray-500 hover:text-gray-700 transition-colors"
@@ -69,7 +85,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               <div className="text-xs">Copy Response</div>
             </button>
             {showTooltip && (
-              <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10" role="status">
+              <div
+                className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10"
+                role="status"
+              >
                 Response copied!
               </div>
             )}

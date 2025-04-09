@@ -1,3 +1,4 @@
+// api.ts
 import axios from 'axios';
 import { ApiRequest, ApiResponse } from '../types';
 
@@ -8,15 +9,14 @@ export const fetchChatResponse = async (query: string): Promise<string> => {
   try {
     const requestData: ApiRequest = { text: query };
     const response = await axios.post<ApiResponse>(QUERY_URL, requestData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
     console.log('API Response:', response.data);
-    if (response.data && response.data.response) {
-      return response.data.response;
+    const responseValue = response.data.response;
+    if (typeof responseValue === 'object') {
+      return JSON.stringify(responseValue, null, 2);
     } else {
-      throw new Error('Received invalid response format from server');
+      return responseValue;
     }
   } catch (error) {
     console.error('Error details:', error);
@@ -32,16 +32,15 @@ export const fetchEmpathyResponse = async (query: string): Promise<string> => {
   try {
     const requestData: ApiRequest = { text: query };
     const response = await axios.post<ApiResponse>(EMPATH_URL, requestData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
     console.log('Empathy API Response:', response.data);
-    if (response.data && response.data.response) {
-      return response.data.response;
-    } else {
-      throw new Error('Received invalid empathy response format from server');
+    const empathyResponse = response.data.response;
+    if (typeof empathyResponse === 'object' && empathyResponse !== null) {
+      const respObj = empathyResponse as any;
+      return respObj.response || JSON.stringify(empathyResponse, null, 2);
     }
+    return empathyResponse;
   } catch (error) {
     console.error('Error fetching empathy response:', error);
     throw new Error('Error fetching empathy response');

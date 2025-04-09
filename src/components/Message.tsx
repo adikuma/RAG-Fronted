@@ -1,15 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react'; 
+import React, { useState, useEffect, useRef } from 'react';
 import { Message as MessageType } from '../types';
-import { FiCopy, FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
+import { FiCopy } from 'react-icons/fi';
 
 interface MessageProps {
   message: MessageType;
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
+  // For empathy messages, render a notification card style
+  if (message.sender === 'empathy') {
+    return (
+      <div className="max-w-3xl mx-auto my-4 p-4 rounded-lg border border-green-400 bg-green-50 text-green-800">
+        <strong>User Sentiments:</strong> {message.text}
+      </div>
+    );
+  }
+
   const isUser = message.sender === 'user';
   const [showTooltip, setShowTooltip] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null); 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
@@ -23,14 +32,13 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-
     navigator.clipboard
       .writeText(message.text)
       .then(() => {
-        setShowTooltip(true); 
+        setShowTooltip(true);
         timeoutRef.current = setTimeout(() => {
           setShowTooltip(false);
-          timeoutRef.current = null; 
+          timeoutRef.current = null;
         }, 1500);
       })
       .catch((err) => {
@@ -39,32 +47,17 @@ const Message: React.FC<MessageProps> = ({ message }) => {
   };
 
   return (
-    <div
-      className={`group ${
-        isUser
-          ? 'flex items-start gap-4 py-4 animate-fade-in'
-          : 'flex items-start gap-4 py-4 animate-fade-in relative'
-      }`}
-    >
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${
-          isUser ? 'bg-gray-700' : 'bg-claude-orange'
-        }`}
-      >
-        {isUser ? 'A&' : 'AI'}
+    <div className={`group flex items-start gap-4 py-4 animate-fade-in ${isUser ? '' : 'relative'}`}>
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${isUser ? 'bg-gray-700' : 'bg-claude-orange'}`}>
+        {isUser ? 'You' : 'AI'}
       </div>
       <div className="flex-1">
         <div className="mb-1 text-sm font-medium text-gray-500">
           {isUser ? 'You' : 'Assistant'}
         </div>
-        <div
-          className={`flex-1 leading-relaxed whitespace-pre-line text-gray-800 p-4 rounded-lg ${
-            isUser ? 'bg-white shadow-md border border-blue-600' : ''
-          }`}
-        >
+        <div className={`flex-1 leading-relaxed whitespace-pre-line text-gray-800 p-4 rounded-lg ${isUser ? 'bg-white shadow-md border border-blue-600' : 'bg-claude-bg/10'}`}>
           {message.text}
         </div>
-
         {!isUser && (
           <div className="relative flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
@@ -72,15 +65,11 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               onClick={handleCopy}
               aria-label="Copy response"
             >
-              <FiCopy className="w-4 h-4 " />
+              <FiCopy className="w-4 h-4" />
               <div className="text-xs">Copy Response</div>
             </button>
-
             {showTooltip && (
-              <div
-                className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10"
-                role="status" 
-              >
+              <div className="absolute -top-8 left-0 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10" role="status">
                 Response copied!
               </div>
             )}

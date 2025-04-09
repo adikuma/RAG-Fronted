@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Message from './Message';
 import ChatInput from './ChatInput';
 import { Message as MessageType, ChatState } from '../types';
-import { fetchChatResponse } from '../services/api';
+import { fetchChatResponse, fetchEmpathyResponse } from '../services/api';
 
 const Chat: React.FC = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -35,18 +35,30 @@ const Chat: React.FC = () => {
     }));
 
     try {
-      const response = await fetchChatResponse(text);
-     
+      // Call the main query endpoint.
+      const mainResponse = await fetchChatResponse(text);
+      // Call the empathy endpoint.
+      const empathyResponse = await fetchEmpathyResponse(text);
+
+      // Create the assistant response message.
       const assistantMessage: MessageType = {
         id: uuidv4(),
-        text: response,
+        text: mainResponse,
         sender: 'assistant',
+        timestamp: new Date()
+      };
+
+      // Create a new message for user insights / empathy.
+      const empathyMessage: MessageType = {
+        id: uuidv4(),
+        text: empathyResponse,
+        sender: 'empathy',
         timestamp: new Date()
       };
 
       setChatState(prevState => ({
         ...prevState,
-        messages: [...prevState.messages, assistantMessage],
+        messages: [...prevState.messages, assistantMessage, empathyMessage],
         isLoading: false
       }));
     } catch (error) {
@@ -63,13 +75,13 @@ const Chat: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-4 md:px-0">
         {chatState.messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-24 pb-32">
+            {/* Optionally add a welcome message */}
           </div>
         ) : (
           <div className="max-w-3xl mx-auto pt-8 pb-32">
             {chatState.messages.map(message => (
               <Message key={message.id} message={message} />
             ))}
-            
             {chatState.isLoading && (
               <div className="flex items-start gap-4 py-4 animate-fade-in relative">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 bg-claude-orange mt-4">AI</div>
@@ -82,18 +94,16 @@ const Chat: React.FC = () => {
                 </div>
               </div>
             )}
-            
             {chatState.error && (
               <div className="p-4 rounded-lg bg-red-100 text-red-800 my-4 animate-fade-in">
                 Error: {chatState.error}
               </div>
             )}
-            
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
-      border
+      
       <div className="fixed bottom-0 left-0 right-0 bg-claude-bg border-t border-claude-border shadow-claude">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <ChatInput onSendMessage={handleSendMessage} isLoading={chatState.isLoading} />

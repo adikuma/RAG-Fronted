@@ -1,8 +1,9 @@
 export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'assistant' | 'empathy';
+  sender: 'user' | 'assistant'; 
   timestamp: Date;
+  empathyText?: string; 
 }
 
 export interface ChatState {

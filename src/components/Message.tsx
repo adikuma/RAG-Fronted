@@ -1,3 +1,5 @@
+// src/components/Message.tsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Message as MessageType } from '../types';
 import { FiCopy } from 'react-icons/fi';
@@ -23,7 +25,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       clearTimeout(timeoutRef.current);
     }
     navigator.clipboard
-      .writeText(message.text)
+      .writeText(message.text) 
       .then(() => {
         setShowTooltip(true);
         timeoutRef.current = setTimeout(() => {
@@ -37,40 +39,39 @@ const Message: React.FC<MessageProps> = ({ message }) => {
   };
 
   const isUser = message.sender === 'user';
-  const isAssistant = message.sender === 'assistant';
-  const isEmpathy = message.sender === 'empathy';
+  const isAssistant = message.sender === 'assistant'; 
 
   return (
     <div
       className={`group flex items-start gap-4 py-4 animate-fade-in ${
-        isAssistant ? 'relative' : '' 
+        isAssistant ? 'relative' : ''
       }`}
     >
+      {/* Icon */}
       <div
         className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${
-          isUser ? 'bg-gray-700' :
-          isAssistant ? 'bg-claude-orange' :
-          'bg-blue-500' 
+          isUser ? 'bg-gray-700' : 'bg-claude-orange' 
         }`}
       >
-        {isUser ? 'You' : isAssistant ? 'AI' : '💡'}
+        {isUser ? 'You' : 'AI'}
       </div>
 
       <div className="flex-1">
-        {!isEmpathy && (
-          <div className="mb-1 text-sm font-medium text-gray-500">
-            {isUser ? 'You' : 'Assistant'}
-          </div>
-        )}
+        <div className="mb-1 text-sm font-medium text-gray-500">
+          {isUser ? 'You' : 'Assistant'}
+        </div>
 
         <div
           className={`flex-1 leading-relaxed whitespace-pre-line p-4 rounded-lg ${
-            isUser ? 'bg-white shadow-md border border-blue-600' :
-            isAssistant ? 'bg-claude-bg/10' :
-            'border border-blue-400 bg-blue-50 text-blue-800' 
+            isUser ? 'bg-white shadow-md border border-blue-600' : 'bg-claude-bg/10'
           }`}
         >
-          {isEmpathy && <strong>User Sentiments: </strong>}
+          {isAssistant && message.empathyText && (
+            <div className="border border-blue-400 bg-blue-50 text-blue-800 p-3 rounded-md mb-3 text-sm">
+              <strong>💡 User Sentiments: </strong>
+              {message.empathyText}
+            </div>
+          )}
           {message.text}
         </div>
 

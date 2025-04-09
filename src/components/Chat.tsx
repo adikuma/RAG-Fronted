@@ -1,9 +1,11 @@
+// src/components/Chat.tsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Message from './Message';
 import ChatInput from './ChatInput';
 import { Message as MessageType, ChatState } from '../types';
-import { fetchChatResponse, fetchEmpathyResponse } from '../services/api';
+import { fetchChatResponse, fetchEmpathyResponse } from '../services/api'; // Assuming fetchEmpathyResponse exists
 
 const Chat: React.FC = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -36,28 +38,23 @@ const Chat: React.FC = () => {
     try {
       const [mainResponse, empathyResponse] = await Promise.all([
         fetchChatResponse(text),
-        fetchEmpathyResponse(text)
+        fetchEmpathyResponse(text) 
       ]);
-
-      const empathyMessage: MessageType = {
-        id: uuidv4(),
-        text: empathyResponse,
-        sender: 'empathy',
-        timestamp: new Date()
-      };
 
       const assistantMessage: MessageType = {
         id: uuidv4(),
-        text: mainResponse,
+        text: mainResponse, 
         sender: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        empathyText: empathyResponse 
       };
 
       setChatState(prevState => ({
         ...prevState,
-        messages: [...prevState.messages, empathyMessage, assistantMessage],
+        messages: [...prevState.messages, assistantMessage], 
         isLoading: false
       }));
+
     } catch (error) {
       setChatState(prevState => ({
         ...prevState,
@@ -79,6 +76,7 @@ const Chat: React.FC = () => {
               <Message key={message.id} message={message} />
             ))}
 
+            {/* Loading Indicator */}
             {chatState.isLoading && (
               <div className="flex items-start gap-4 py-4 animate-fade-in relative">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 bg-claude-orange mt-4">AI</div>
@@ -102,6 +100,7 @@ const Chat: React.FC = () => {
           </div>
         )}
       </div>
+
       <div className="fixed bottom-0 left-0 right-0 bg-claude-bg border-t border-claude-border shadow-claude">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <ChatInput onSendMessage={handleSendMessage} isLoading={chatState.isLoading} />
